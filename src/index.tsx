@@ -11,7 +11,10 @@ import { Vault } from "@iiif/vault";
 import Viewer from "@/components/Viewer/Viewer";
 import { createTheme } from "@stitches/react";
 import { getRequest } from "@/services/xhr";
+import Controls from "@/components/Media/Controls";
+import ImageViewer from "@/components/ImageViewer/ImageViewer";
 
+export { Controls, ImageViewer, Viewer };
 interface Props {
   canvasIdCallback?: (arg0: string) => void;
   customTheme?: any;
@@ -21,7 +24,7 @@ interface Props {
 }
 
 const App: React.FC<Props> = ({
-  canvasIdCallback = () => {},
+  canvasIdCallback = () => { },
   customTheme,
   id,
   manifestId,
@@ -195,5 +198,4 @@ const RenderViewer: React.FC<Props> = ({
    */
   return <Viewer manifest={manifest} theme={theme} key={manifest.id} />;
 };
-
 export default App;
