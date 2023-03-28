@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { IIIFExternalWebResource } from "@iiif/presentation-3";
 import OSD, { osdImageTypes } from "@/components/ImageViewer/OSD";
 import { getImageServiceURI } from "@/services/iiif";
+import { ConfigOptions } from "@/context/viewer-context";
 
 interface ImageViewerProps {
   body: IIIFExternalWebResource;
+  options?: ConfigOptions;
 }
 
-const ImageViewer: React.FC<ImageViewerProps> = ({ body }) => {
+const ImageViewer: React.FC<ImageViewerProps> = ({ body, options }) => {
   const [imageType, setImageType] = useState<osdImageTypes>();
   const [uri, setUri] = useState<string | undefined>();
 
@@ -21,7 +23,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({ body }) => {
     }
   }, [body]);
 
-  return <OSD uri={uri} key={uri} imageType={imageType} />;
+  return <OSD uri={uri} key={uri} imageType={imageType} options={options} />;
 };
 
 export default ImageViewer;

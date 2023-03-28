@@ -8,23 +8,27 @@ import {
 import Controls from "@/components/ImageViewer/Controls";
 import { getInfoResponse } from "@/services/iiif";
 import { v4 as uuidv4 } from "uuid";
-import { useViewerState } from "@/context/viewer-context";
+import {
+  useViewerState,
+  ConfigOptions
+} from "@/context/viewer-context";
 
 export type osdImageTypes = "tiledImage" | "simpleImage" | undefined;
 
 interface OSDProps {
   uri: string | undefined;
   imageType: osdImageTypes;
+  options?: ConfigOptions;
 }
 
-const OSD: React.FC<OSDProps> = ({ uri, imageType }) => {
+const OSD: React.FC<OSDProps> = ({ uri, imageType, options }) => {
   const [osdUri, setOsdUri] = useState<string>();
   const viewerState: any = useViewerState();
   const { configOptions } = viewerState;
 
   const instance = uuidv4();
 
-  const config: Options = {
+  const config: Options = (options) ? options : {
     id: `openseadragon-viewport-${instance}`,
     loadTilesWithAjax: true,
     fullPageButton: "fullPage",
@@ -86,7 +90,11 @@ const OSD: React.FC<OSDProps> = ({ uri, imageType }) => {
       }}
     >
       <Controls options={config} />
-      <Navigator id={`openseadragon-navigator-${instance}`} />
+      {
+        config.showNavigator && (
+          <Navigator id={`openseadragon-navigator-${instance}`} />
+        )
+      }
       <Viewport id={`openseadragon-viewport-${instance}`} />
     </Wrapper>
   );
