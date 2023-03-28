@@ -6,10 +6,11 @@ import { ConfigOptions } from "@/context/viewer-context";
 
 interface ImageViewerProps {
   body: IIIFExternalWebResource;
+  hasPlaceholder: boolean;
   options?: ConfigOptions;
 }
 
-const ImageViewer: React.FC<ImageViewerProps> = ({ body, options }) => {
+const ImageViewer: React.FC<ImageViewerProps> = ({ body, hasPlaceholder, options }) => {
   const [imageType, setImageType] = useState<osdImageTypes>();
   const [uri, setUri] = useState<string | undefined>();
 
@@ -23,7 +24,14 @@ const ImageViewer: React.FC<ImageViewerProps> = ({ body, options }) => {
     }
   }, [body]);
 
-  return <OSD uri={uri} key={uri} imageType={imageType} options={options} />;
+  return (
+    <OSD
+      uri={uri}
+      key={uri}
+      imageType={imageType}
+      hasPlaceholder={hasPlaceholder}
+      options={options} />
+  );
 };
 
 export default ImageViewer;
