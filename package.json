@@ -1,5 +1,5 @@
 {
-  "name": "@samvera/clover-iiif",
+  "name": "@navnorth/clover-iiif",
   "version": "1.15.3",
   "description": "Viewer for audio, video and image file types driven by a IIIF manifest",
   "main": "dist/index.cjs.js",
@@ -81,5 +81,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }
