@@ -28,6 +28,10 @@ export const manifests = [
     label: "Basin",
   },
   {
+    url: "https://samvera-labs.github.io/clover-iiif/fixtures/iiif/manifests/utexas.json",
+    label: "David Pugh (Interview, WebVTT Transcript)",
+  },
+  {
     url: "https://view.nls.uk/manifest/7549/75496599/manifest.json",
     label: "Edinburgh characters",
   },

@@ -1,57 +1,34 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Hls, { HlsConfig } from "hls.js";
 import { PlayerWrapper } from "@/components/Player/Player.styled";
 import { IIIFExternalWebResource } from "@iiif/presentation-3";
 import { LabeledResource } from "@/hooks/use-iiif/getSupplementingResources";
 import AudioVisualizer from "@/components/Player/AudioVisualizer";
-import { CurrentTimeContext } from "@/context/current-time-context";
 import { useViewerState } from "@/context/viewer-context";
 import Track from "@/components/Player/Track";
-import {
-  getAccompanyingCanvasImage,
-  getCanvasByCriteria,
-} from "@/hooks/use-iiif";
+import { getPaintingResource } from "@/hooks/use-iiif";
 
 // Set referrer header as a NU domain: ie. meadow.rdc-staging.library.northwestern.edu
 
 interface PlayerProps {
   painting: IIIFExternalWebResource;
   resources: LabeledResource[];
-  hasPlaceholder: boolean;
 }
 
-const Player: React.FC<PlayerProps> = ({
-  painting,
-  resources,
-  hasPlaceholder,
-}) => {
-  const playerRef = React.useRef(null);
+const Player: React.FC<PlayerProps> = ({ resources, painting }) => {
+  const [currentTime, setCurrentTime] = React.useState<number>(0);
+  const [poster, setPoster] = React.useState<string | undefined>();
+  const playerRef = React.useRef<HTMLVideoElement>(null);
   const isAudio = painting?.format?.includes("audio/");
-
-  const { startTime, updateCurrentTime } = React.useContext(CurrentTimeContext);
 
   const viewerState: any = useViewerState();
   const { activeCanvas, configOptions, vault } = viewerState;
 
   /**
-   * Get active canvas full object
-   */
-  const activeCanvasObject = getCanvasByCriteria(
-    vault,
-    { id: activeCanvas, type: "Canvas" },
-    "painting",
-    ["Image"],
-  );
-
-  const posterImage = getAccompanyingCanvasImage(
-    activeCanvasObject.accompanyingCanvas,
-  );
-
-  /**
    * HLS.js binding for .m3u8 files
    * STAGING and PRODUCTION environments only
    */
-  React.useEffect(() => {
+  useEffect(() => {
     /**
      * Check that IIIF content resource ID exists and
      * we have a reffed <video> for attaching HLS
@@ -106,29 +83,47 @@ const Player: React.FC<PlayerProps> = ({
     });
 
     return () => {
-      if (hls) {
+      if (hls && playerRef.current) {
+        const video: HTMLVideoElement = playerRef.current;
         hls.detachMedia();
         hls.destroy();
-        updateCurrentTime(0);
+        video.currentTime = 0;
       }
     };
   }, [painting.id]);
 
-  React.useEffect(() => {
-    let video: any = playerRef.current;
-    if (video) video.currentTime = startTime;
-    if (startTime !== 0) video.play();
-    if (hasPlaceholder) video.play();
-  }, [startTime, hasPlaceholder]);
+  useEffect(() => {
+    const canvas = vault.get(activeCanvas);
+    const accompanyingCanvas = canvas.accompanyingCanvas?.id
+      ? getPaintingResource(vault, canvas.accompanyingCanvas?.id)
+      : null;
 
-  const handlePlay = () => {
-    let video: any = playerRef.current;
-    if (video) {
-      video.ontimeupdate = (event: any) => {
-        updateCurrentTime(event.target.currentTime);
-      };
+    const placeholderCanvas = canvas.placeholderCanvas?.id
+      ? getPaintingResource(vault, canvas.placeholderCanvas?.id)
+      : null;
+
+    const conflictingCanvas = !!(accompanyingCanvas && placeholderCanvas);
+
+    if (conflictingCanvas) {
+      currentTime === 0
+        ? setPoster(placeholderCanvas.id)
+        : setPoster(accompanyingCanvas.id);
+    } else {
+      if (accompanyingCanvas) setPoster(accompanyingCanvas.id);
+      if (placeholderCanvas) setPoster(placeholderCanvas.id);
     }
-  };
+  }, [activeCanvas, currentTime]);
+
+  useEffect(() => {
+    if (playerRef?.current) {
+      const video: HTMLVideoElement = playerRef.current;
+      video?.addEventListener("timeupdate", () =>
+        setCurrentTime(video.currentTime),
+      );
+
+      return () => document.removeEventListener("timeupdate", () => {});
+    }
+  }, [playerRef?.current]);
 
   return (
     <PlayerWrapper
@@ -144,9 +139,8 @@ const Player: React.FC<PlayerProps> = ({
         controls
         height={painting.height}
         width={painting.width}
-        onPlay={handlePlay}
         crossOrigin="anonymous"
-        poster={posterImage}
+        poster={poster}
         style={{
           maxHeight: configOptions.canvasHeight,
         }}
