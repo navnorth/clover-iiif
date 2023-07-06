@@ -29,7 +29,7 @@ const OSD: React.FC<OSDProps> = ({ uri, imageType, hasPlaceholder, options }) =>
 
   const instance = uuidv4();
 
-  const config: Options = (options) ? options : {
+  const config: Options = {
     id: `openseadragon-viewport-${instance}`,
     loadTilesWithAjax: true,
     fullPageButton: "fullPage",
@@ -53,6 +53,7 @@ const OSD: React.FC<OSDProps> = ({ uri, imageType, hasPlaceholder, options }) =>
     },
     ...configOptions.openSeadragon,
     ajaxWithCredentials: configOptions.withCredentials,
+    ...options
   };
 
   useEffect(() => {
